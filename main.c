@@ -13,11 +13,13 @@ void initPersona(ePersona* pPersona, int length);
 
 int buscarLibre(ePersona* pPersona, int length);
 
-int buscarLegajo(ePersona* pPersona, int length, int indice);
+int buscarLegajo(ePersona* pPersona, int length, int legajo);
 void pedirDatos(ePersona* pPersona,int length, char* nombre, char* apellido, int* legajo, int PedirLegajo);
+void modificarPersona(ePersona* pPersona, int length);
 ePersona* nuevaPersona(char* nombre, char* apellido, int* legajo);
 void agregarPersona(ePersona* pPersona, int length);
-
+void guardarDatos(ePersona *pPersona, int length);
+void cargarDatos(ePersona* pPersona, int length);
 void printArrayAgenda(ePersona* pPersona, int length);
 
 int main()
@@ -26,6 +28,7 @@ int main()
     char opcion;
     int auxInt;
     initPersona(personas, 200);
+    cargarDatos(personas, 200);
     do
     {
         printf("1.ALTA\n2.MODIFICACION\n3.BAJA\n4.IMPRIMIR\n5.SALIR\n");
@@ -37,6 +40,7 @@ int main()
                 agregarPersona(personas, 200);
                 break;
             case '2':
+                modificarPersona(personas, 200);
                 break;
             case '3':
                 break;
@@ -44,6 +48,7 @@ int main()
                 printArrayAgenda(personas, 200);
                 break;
             case '5':
+                guardarDatos(personas, 200);
                 break;
         }
     }while(opcion!='5');
@@ -112,6 +117,7 @@ void pedirDatos(ePersona* pPersona,int length, char* nombre, char* apellido, int
                     auxInt = buscarLegajo(pPersona, length, auxLegajo);
                     if(auxInt == 1)
                     {
+                        printf("Ese legajo ya existe!");
                         auxInt = -1;
                     }
                     else
@@ -132,7 +138,7 @@ void pedirDatos(ePersona* pPersona,int length, char* nombre, char* apellido, int
     }
 }
 
-int buscarLegajo(ePersona* pPersona, int length, int indice)
+int buscarLegajo(ePersona* pPersona, int length, int legajo)
 {
     int i;
     int returnAux = -1;
@@ -141,7 +147,7 @@ int buscarLegajo(ePersona* pPersona, int length, int indice)
         returnAux = 0;
         for(i= 0; i<length; i++)
         {
-            if((pPersona+i)->legajo == indice)
+            if((pPersona+i)->legajo == legajo)
             {
                 returnAux = 1;
             }
@@ -159,7 +165,6 @@ ePersona* nuevaPersona(char* nombre, char* apellido, int* legajo)
         strcpy(returnPersona->apellido, apellido);
         returnPersona->legajo = *legajo;
 
-        printf("%s %s %d", returnPersona->nombre, returnPersona->apellido, returnPersona->legajo);
     }
     return returnPersona;
 }
@@ -169,7 +174,6 @@ void agregarPersona(ePersona* pPersona, int length)
     char nombre[30];
     char apellido[30];
     int legajo;
-    int auxInt;
     int libre;
     ePersona* auxPersona = malloc(sizeof(ePersona));
 
@@ -205,4 +209,85 @@ void printArrayAgenda(ePersona* pPersona, int length)
     }
 }
 
-//void guardarDatos()
+void guardarDatos(ePersona *pPersona, int length)
+{
+    int i;
+    int cantidad = 0;
+    FILE* pArch;
+    int longitud;
+
+    if(pPersona != NULL && length> 0)
+    {
+        for(i = 0; i<length; i++)
+        {
+            if((pPersona+i)->legajo != -1)
+            {
+               cantidad++;
+            }
+        }
+
+        pArch = fopen("agenda.dat", "wb");
+        if(pArch != NULL)
+        {
+            longitud = fwrite(pPersona,sizeof(ePersona), cantidad, pArch);
+            if(longitud< cantidad)
+            {
+                printf("ERROR");
+            }
+        }
+        fclose(pArch);
+    }
+}
+
+void cargarDatos(ePersona* pPersona, int length)
+{
+    int auxInt;
+    FILE* pArch;
+    int longitud;
+
+    if(pPersona != NULL && length > 0)
+    {
+        pArch = fopen("agenda.dat","rb");
+        if(pArch != NULL)
+        {
+            fseek(pArch, 0L, SEEK_END);
+            longitud = ftell(pArch);
+            rewind(pArch);
+            while(!feof(pArch))
+            {
+               auxInt = fread(pPersona, sizeof(ePersona), longitud, pArch);
+               if(feof(pArch))
+               {
+                   break;
+               }
+            }
+
+        }
+    }
+}
+
+void modificarPersona(ePersona* pPersona, int length)
+{
+    int auxInt;
+    int legajo;
+    int indice;
+    char nombre[20];
+    char apellido[20];
+    ePersona* auxPelicula;
+    if(pPersona != NULL && length>0)
+    {
+        do
+        {
+            auxInt = getInt(&legajo, "Ingrese el legajo de la persona a modificar: ", "ERROR: legajo no valido", 0, 201);
+
+        }while(auxInt!=0);
+        indice = buscarLegajo(pPersona, length, legajo);
+        if(indice != -1)
+        {
+            printf("%d", indice);
+            pedirDatos(pPersona, length, nombre, apellido, &legajo, 0);
+            auxPelicula = nuevaPersona(nombre, apellido, &legajo);
+            *(pPersona+indice) = *auxPelicula;
+        }
+    }
+}
