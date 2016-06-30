@@ -1,0 +1,16 @@
+# depslib dependency file v1.0
+1467247071 source:/home/chusti/Escritorio/C/clase_8/input.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<ctype.h>
+	"input.h"
+
+1467247077 /home/chusti/Escritorio/C/clase_8/input.h
+
+1467254797 source:/home/chusti/Escritorio/C/clase_8/main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"input.h"
+
